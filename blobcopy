@@ -1,0 +1,27 @@
+Import-Module Az.Storage
+Connect-AzAccount
+# List Azure Subscriptions
+Get-AzSubscription
+ 
+# Define Variables
+$subscriptionId = "yourSubscriptionId"
+$storageAccountRG = "demo-azcopy-rg"
+$storageAccountName = "tomsaccount"
+$storageContainerName = "images"
+$localPath = "C:tempimages"
+ 
+# Select right Azure Subscription
+Select-AzSubscription -SubscriptionId $SubscriptionId
+ 
+# Get Storage Account Key
+$storageAccountKey = (Get-AzStorageAccountKey -ResourceGroupName $storageAccountRG -AccountName $storageAccountName).Value[0]
+ 
+# Set AzStorageContext
+$destinationContext = New-AzStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey
+ 
+# Generate SAS URI
+$containerSASURI = New-AzStorageContainerSASToken -Context $destinationContext -ExpiryTime(get-date).AddSeconds(3600) -FullUri -Name $storageContainerName -Permission rw
+ 
+# Upload File using AzCopy
+C:/azcopy cp $localPath $containerSASURI 
+
